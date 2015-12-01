@@ -8,16 +8,18 @@
 	<servlet>
 		<servlet-name>InsuranceServlet</servlet-name>
 		<servlet-class>se.mikka.demo.threadpoolexecutor.servlet.InsuranceServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
 	</servlet>
+	<servlet>
+		<servlet-name>PartnerServlet</servlet-name>
+		<servlet-class>se.mikka.demo.threadpoolexecutor.servlet.PartnerServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+	
 	<servlet-mapping>
 		<servlet-name>InsuranceServlet</servlet-name>
 		<url-pattern>/insurance</url-pattern>
 	</servlet-mapping>
-	
-	<servlet>
-		<servlet-name>PartnerServlet</servlet-name>
-		<servlet-class>se.mikka.demo.threadpoolexecutor.servlet.PartnerServlet</servlet-class>
-	</servlet>
 	<servlet-mapping>
 		<servlet-name>PartnerServlet</servlet-name>
 		<url-pattern>/partnerInsurance</url-pattern>
