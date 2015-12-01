@@ -31,7 +31,7 @@ public class PartnerServlet extends HttpServlet {
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 		
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSent 'POST' request to URL : " + insuranceUrl);
+		System.out.println("Sent 'POST' request to URL : " + insuranceUrl);
 		System.out.println("Response Code : " + responseCode);
 	}
 }

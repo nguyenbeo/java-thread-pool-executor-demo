@@ -2,6 +2,9 @@ package se.mikka.demo.threadpoolexecutor.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,7 +17,9 @@ import se.mikka.demo.threadpoolexecutor.soap.SoapStep2;
 public class InsuranceServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = -8258424630879697366L;
-
+	
+	private ExecutorService executorService = Executors.newFixedThreadPool(300);
+	
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         PrintWriter out = resp.getWriter();
         
@@ -23,14 +28,23 @@ public class InsuranceServlet extends HttpServlet {
 	
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	        throws ServletException, IOException {
-		// If partners then execute all steps at the same time
-		if ("partners".equals(req.getParameter("from"))) {
-			System.out.println("Received request from partner");
-			new SoapStep1().getStep1();
-			new SoapStep2().getStep2();
-		} else { // from customers instead of partners
-			System.out.println("Received request from customer");
-			new SoapStep1().getStep1();
-		}
+		executorService.execute(new Runnable() {
+		    public void run() {
+		    	// If partners then execute all steps at the same time
+				if ("partners".equals(req.getParameter("from"))) {
+					System.out.println("Received request from partner: " + new Date());
+					new SoapStep1().getStep1();
+					new SoapStep2().getStep2();
+				} else { // from customers instead of partners
+					System.out.println("Received request from customer: " + new Date());
+					new SoapStep1().getStep1();
+					System.out.println("Responsed to customer" + new Date());
+				}
+		    }
+		});
+	}
+	
+	public void destroy() {
+		executorService.shutdown();
 	}
 }
