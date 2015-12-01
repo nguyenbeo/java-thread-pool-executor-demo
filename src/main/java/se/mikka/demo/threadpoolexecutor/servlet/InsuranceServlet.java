@@ -3,7 +3,10 @@ package se.mikka.demo.threadpoolexecutor.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +19,7 @@ public class InsuranceServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = -8258424630879697366L;
 	
-	//private ExecutorService executorService = Executors.newFixedThreadPool(300);
+	private ExecutorService executorService = Executors.newFixedThreadPool(300);
 	
 	
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -65,18 +68,29 @@ public class InsuranceServlet extends HttpServlet {
 				e.printStackTrace();
 			}
 		}*/
-		if ("partners".equals(req.getParameter("from"))) {
-			System.out.println("Received request from partner: " + new Date());
-			new SoapStep1().getStep1();
-			new SoapStep2().getStep2();
-		} else { // from customers instead of partners
-			System.out.println("Received request from customer: " + new Date());
-			new SoapStep1().getStep1();
-			System.out.println("Responsed to customer" + new Date());
-		}
+		// Initialize async processing.
+		final AsyncContext context = req.startAsync();
+		
+		executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				if ("partners".equals(req.getParameter("from"))) {
+					System.out.println("Received request from partner: " + new Date());
+					new SoapStep1().getStep1();
+					new SoapStep2().getStep2();
+				} else { // from customers instead of partners
+					System.out.println("Received request from customer: " + new Date());
+					new SoapStep1().getStep1();
+					System.out.println("Responsed to customer" + new Date());
+				}
+				context.complete();
+			}
+		});
+		
+		
 	}
 	
 	public void destroy() {
-		//executorService.shutdown();
+		executorService.shutdown();
 	}
 }
