@@ -23,6 +23,11 @@ Expected result: We want the thread of Customer Insurance Test to have a chance 
 * Using Thread Pool Executor
 
 # How to test
-- Install Tomcat on your computer
-- Install JMeter on your computer
-- Enable JConsole for Tomcat
+* Download Tomcat on your computer
+* Download JMeter on your computer
+* Enable JConsole for Tomcat
+
+* Start Tomcat with this application
+* Run Insurance Test.jmx from JMeter
+* Wait for some seconds
+* Run Customer Insurance Test.jmx from JMeter
