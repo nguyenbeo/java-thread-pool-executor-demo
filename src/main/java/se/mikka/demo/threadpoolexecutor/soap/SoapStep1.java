@@ -7,9 +7,10 @@ package se.mikka.demo.threadpoolexecutor.soap;
  */
 public class SoapStep1 {
 	
+	@SuppressWarnings("static-access")
 	public void getStep1() {
 		try {
-			Thread.sleep(3000);
+			Thread.currentThread().sleep(3000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
