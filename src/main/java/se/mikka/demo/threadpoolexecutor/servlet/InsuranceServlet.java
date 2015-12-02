@@ -14,82 +14,67 @@ import javax.servlet.http.HttpServletResponse;
 
 import se.mikka.demo.threadpoolexecutor.soap.SoapStep1;
 import se.mikka.demo.threadpoolexecutor.soap.SoapStep2;
+import se.mikka.demo.threadpoolexecutor.soap.SoapStep3;
 
 public class InsuranceServlet extends HttpServlet {
-	
+
 	private static final long serialVersionUID = -8258424630879697366L;
-	
+
 	private ExecutorService executorService = Executors.newFixedThreadPool(300);
-	
-	
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        PrintWriter out = resp.getWriter();
-        
-        out.write("Servlet 3 web.xml example configuration");
-    }
-	
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-	        throws ServletException, IOException {
-		
-		// If partners then execute all steps at the same time
-		/*if ("partners".equals(req.getParameter("from"))) {
-			Future<String> future = executorService.submit(new Callable<String>() {
-				@Override
-				public String call() {
-					System.out.println("Received request from partner: " + new Date());
-					new SoapStep1().getStep1();
-					new SoapStep2().getStep2();
-					return "Callable Result";
-				}
-			});
-			try {
-				if ("Callable Result".equals(future.get())) {
-					return;
-				}
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-			}
-		} else { // from customers instead of partners
-			Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-			Future<String> future = executorService.submit(new Callable<String>() {
-				@Override
-				public String call() {
-					System.out.println("Received request from customer: " + new Date());
-					new SoapStep1().getStep1();
-					System.out.println("Responsed to customer" + new Date());
-					return "Callable Result";
-				}
-			});
-			try {
-				if ("Callable Result".equals(future.get())) {
-					return;
-				}
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-			}
-		}*/
+
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		PrintWriter out = resp.getWriter();
+
+		out.write("Servlet 3 web.xml example configuration");
+	}
+
+	protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
+			throws ServletException, IOException {
 		// Initialize async processing.
-		final AsyncContext context = req.startAsync();
-		
+		final AsyncContext asyncContext = req.startAsync();
+		asyncContext.setTimeout(40000);
+
 		executorService.execute(new Runnable() {
 			@Override
 			public void run() {
-				if ("partners".equals(req.getParameter("from"))) {
-					System.out.println("Received request from partner: " + new Date());
-					new SoapStep1().getStep1();
-					new SoapStep2().getStep2();
-				} else { // from customers instead of partners
-					System.out.println("Received request from customer: " + new Date());
-					new SoapStep1().getStep1();
-					System.out.println("Responsed to customer" + new Date());
+				try {
+					// print request and response outside this thread
+					//System.out.println("Request thread: " + req.getParameter("threadNumber"));
+					//System.out.println("Response: " + resp);
+					
+					HttpServletRequest request = (HttpServletRequest) asyncContext.getRequest();
+					HttpServletResponse response = (HttpServletResponse) asyncContext.getResponse();
+					PrintWriter printWriter = response.getWriter();
+					if ("partners".equals(request.getParameter("from"))) {
+						System.out.println("Received request from partner: "
+								+ new Date());
+						new SoapStep1().getStep1();
+						new SoapStep2().getStep2();
+						new SoapStep3().process(request, response);
+						// Print response
+						printWriter.write("Thread number: "
+								+ request.getParameter("threadNumber"));
+						printWriter.flush();
+					} else { // from customers instead of partners
+						System.out.println("Received request from customer: "
+								+ new Date());
+						new SoapStep1().getStep1();
+						System.out
+								.println("Responsed to customer" + new Date());
+					}
+					
+					// finish asynchronous 
+					asyncContext.complete();
+					
+				} catch (IOException e) {
+					throw new RuntimeException(e);
 				}
-				context.complete();
 			}
 		});
-		
-		
+
 	}
-	
+
 	public void destroy() {
 		executorService.shutdown();
 	}
